@@ -1,3 +1,5 @@
+#![feature(test)]
+
 use csv::Reader;
 #[cfg(feature = "dhat-on")]
 use dhat;
@@ -92,4 +94,22 @@ fn main() {
         eprintln!("[csv-count] {}", e);
         std::process::exit(1);
     });
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate test;
+
+    use super::*;
+    use test::{black_box, Bencher};
+
+    #[bench]
+    fn bench_read_csv(b: &mut Bencher) {
+        let bytes = read_file(&"test.csv".into()).expect("failed to read file");
+        b.iter(|| {
+            for _ in 1..2 {
+                black_box(read_csv(&bytes)).expect("benchmark failure");
+            }
+        });
+    }
 }
