@@ -1,4 +1,6 @@
 use csv::Reader;
+#[cfg(feature = "dhat-on")]
+use dhat;
 use serde_bytes::ByteBuf;
 use std::collections::HashMap;
 use std::convert::TryInto;
@@ -6,6 +8,12 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
+
+#[cfg(feature = "dhat-on")]
+use dhat::{Dhat, DhatAlloc};
+#[cfg(feature = "dhat-on")]
+#[global_allocator]
+static ALLOCATOR: DhatAlloc = DhatAlloc;
 
 type Record = HashMap<String, ByteBuf>;
 
@@ -77,6 +85,9 @@ fn go(input: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
+    #[cfg(feature = "dhat-on")]
+    let _dhat = Dhat::start_heap_profiling();
+
     go("test.csv").unwrap_or_else(|e| {
         eprintln!("[csv-count] {}", e);
         std::process::exit(1);
