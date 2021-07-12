@@ -3,7 +3,6 @@
 use csv::Reader;
 #[cfg(feature = "dhat-on")]
 use dhat;
-use serde_bytes::ByteBuf;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::error::Error;
@@ -16,8 +15,6 @@ use dhat::{Dhat, DhatAlloc};
 #[cfg(feature = "dhat-on")]
 #[global_allocator]
 static ALLOCATOR: DhatAlloc = DhatAlloc;
-
-type Record = HashMap<String, ByteBuf>;
 
 const NULL: &'static str = "NULL"; // or whatever.
 
@@ -40,12 +37,12 @@ pub fn read_file(data: &PathBuf) -> Result<Vec<u8>, Box<dyn Error>> {
 
 pub fn read_csv(data: &[u8]) -> Result<Vec<Option<Field>>, Box<dyn Error>> {
     let mut reader = Reader::from_reader(data);
-    let headers = reader.headers().unwrap().clone().into_byte_record();
+    let _headers = reader.headers().unwrap().clone().into_byte_record();
     let mut fields = vec![];
-    for record in reader.byte_records() {
-        let record = record?;
-        let record: Record = record.deserialize(Some(&headers))?;
-        for (_, value) in record.into_iter() {
+    let mut record = csv::ByteRecord::new();
+    while !reader.is_done() {
+        reader.read_byte_record(&mut record).unwrap();
+        for value in record.iter() {
             fields.push(parse(&value));
         }
     }

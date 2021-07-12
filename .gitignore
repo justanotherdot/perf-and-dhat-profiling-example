@@ -2,4 +2,4 @@
 perf.*
 *.svg
 stacks.*
-dhat-heap.json
+dhat-heap.json*
