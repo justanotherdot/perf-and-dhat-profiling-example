@@ -1,0 +1,4 @@
+/target
+perf.*
+*.svg
+stacks.*
